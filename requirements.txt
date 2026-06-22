@@ -1,0 +1,2 @@
+stringzilla>=3.0; sys_platform == "win32"
+pytest>=9.0
