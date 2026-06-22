@@ -134,12 +134,8 @@ JSON 输出结构：
 
 | 层级 | 技术 |
 |------|------|
-| 语言 | Python 3.11 |
+| 语言 | Python 3.8 |
 | GUI | Tkinter (ttk) |
 | 文件类型识别 | TrID (trid_lite.py) |
 | 配置存储 | JSON |
 | 并发 | threading + ThreadPoolExecutor |
-
-## 许可证
-
-MIT
