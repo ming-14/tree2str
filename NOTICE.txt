@@ -1,0 +1,57 @@
+==========================================================================
+  NOTICE - 版权与许可信息
+  Copyright & License Information
+  文件树ToStr
+==========================================================================
+
+本程序基于 TrID (C) 2003-2026 by Marco Pontello 修改而来。
+This program is a modified version of TrID (C) 2003-2026 by Marco Pontello.
+Original TrID: https://mark0.net/soft-trid-e.html
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                          GNU AGPLv3                                 │
+│  This program is free software: you can redistribute it and/or      │
+│  modify it under the terms of the GNU Affero General Public         │
+│  License as published by the Free Software Foundation, either       │
+│  version 3 of the License, or (at your option) any later version.  │
+│                                                                    │
+│  This program is distributed in the hope that it will be useful,   │
+│  but WITHOUT ANY WARRANTY; without even the implied warranty of    │
+│  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the      │
+│  GNU Affero General Public License for more details.               │
+│                                                                    │
+│  You should have received a copy of the GNU Affero General Public  │
+│  License along with this program. If not, see                      │
+│  <https://www.gnu.org/licenses/>.                                  │
+└──────────────────────────────────────────────────────────────────────┘
+
+修改声明 / Modification Notice (AGPLv3 §5(a)):
+  本文件是 TrID 的修改版。
+  修改内容：剥离非核心功能（CLI、网络更新、文件扫描等），仅保留文件
+  类型识别引擎，适配本项目的文件树输出管线。
+  This is a modified version of TrID. Changes include stripping
+  non-core features, retaining only the file-type identification
+  engine, and adapting to this project's output pipeline.
+  修改日期 / Date of modification: 2026
+
+源码获取 / Source Code Availability:
+  本程序的完整对应源码随本 EXE 一起提供，位于同一目录下的
+  _internal/source/ 或可访问项目仓库获取。
+  The complete Corresponding Source is provided alongside this EXE
+  in the _internal/source/ directory.
+
+TrID 双授权说明 / TrID Dual License:
+  TrID 采用双授权发布。非商业用途使用 GNU AGPLv3；商业用途（包括
+  任何营利性使用）需向作者 Marco Pontello (marcopon@gmail.com)
+  另行购买商业许可。
+  TrID is dual-licensed. Non-commercial use under GNU AGPLv3.
+  Commercial use requires a separate license from Marco Pontello.
+
+作者 / Author:
+  文件树ToStr 本项目作者（基于 TrID 修改）
+  Based on TrID by Marco Pontello
+
+本程序包含以下第三方代码：
+This program incorporates third-party code:
+  - TrID (C) 2003-2026 Marco Pontello (GNU AGPLv3)
+  - StringZilla (optional, MIT)
