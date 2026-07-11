@@ -5,6 +5,8 @@ import os
 import logging
 from typing import Set, List, Dict, Optional, Callable, Tuple
 
+from lib.i18n import t
+
 logger = logging.getLogger(__name__)
 
 _CHECKED_MARK = "\u2611"
@@ -350,7 +352,7 @@ class NoExtFileDialog:
         self._search_query: str = ""
 
         self.dialog = tk.Toplevel(parent)
-        self.dialog.title("没有扩展名的文件")
+        self.dialog.title(t("dialog.no_ext.title"))
         self.dialog.geometry(f"{self._DIALOG_DEFAULT_WIDTH}x{self._DIALOG_DEFAULT_HEIGHT}")
         self.dialog.minsize(self._DIALOG_MIN_WIDTH, self._DIALOG_MIN_HEIGHT)
         self.dialog.transient(parent)
@@ -372,18 +374,18 @@ class NoExtFileDialog:
         ## ── 搜索栏 ──
         search_frame = ttk.Frame(main)
         search_frame.pack(fill=tk.X, pady=(0, 5))
-        ttk.Label(search_frame, text="搜索:").pack(side=tk.LEFT)
+        ttk.Label(search_frame, text=t("dialog.search.label")).pack(side=tk.LEFT)
         self._search_var = tk.StringVar()
         self._search_entry = ttk.Entry(search_frame, textvariable=self._search_var)
         self._search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         self._search_entry.bind("<Return>", lambda e: self._on_search())
-        ttk.Button(search_frame, text="搜索", command=self._on_search).pack(side=tk.RIGHT)
-        ttk.Button(search_frame, text="清除", command=self._on_clear_search).pack(side=tk.RIGHT, padx=2)
+        ttk.Button(search_frame, text=t("dialog.search.button"), command=self._on_search).pack(side=tk.RIGHT)
+        ttk.Button(search_frame, text=t("dialog.clear.button"), command=self._on_clear_search).pack(side=tk.RIGHT, padx=2)
 
         ## ── 顶部工具栏 ──
         top_frame = ttk.Frame(main)
         top_frame.pack(fill=tk.X)
-        ttk.Label(top_frame, text="勾选需要收集内容的文件:").pack(side=tk.LEFT)
+        ttk.Label(top_frame, text=t("dialog.select_files")).pack(side=tk.LEFT)
         self._result_label = ttk.Label(top_frame, text="", foreground="gray")
         self._result_label.pack(side=tk.RIGHT, padx=5)
 
@@ -395,9 +397,9 @@ class NoExtFileDialog:
             tree_frame, columns=columns, show="headings", selectmode="browse"
         )
         self._tree.heading("sel", text="")
-        self._tree.heading("path", text="路径", command=lambda: self._on_sort("path"))
-        self._tree.heading("size", text="大小", command=lambda: self._on_sort("size"))
-        self._tree.heading("mtime", text="修改时间", command=lambda: self._on_sort("mtime"))
+        self._tree.heading("path", text=t("dialog.col.path"), command=lambda: self._on_sort("path"))
+        self._tree.heading("size", text=t("dialog.col.size"), command=lambda: self._on_sort("size"))
+        self._tree.heading("mtime", text=t("dialog.col.mtime"), command=lambda: self._on_sort("mtime"))
         self._tree.column("sel", width=40, stretch=False, anchor=tk.CENTER)
         self._tree.column("path", width=280, anchor=tk.W)
         self._tree.column("size", width=90, anchor=tk.E)
@@ -416,12 +418,12 @@ class NoExtFileDialog:
         self._tree.bind("<Button-3>", self._on_right_click)
 
         self._ctx_menu = tk.Menu(self.dialog, tearoff=0)
-        self._ctx_menu.add_command(label="勾选/反勾选", command=self._ctx_toggle)
-        self._ctx_menu.add_command(label="复制文件信息", command=self._ctx_copy)
+        self._ctx_menu.add_command(label=t("dialog.ctx.toggle"), command=self._ctx_toggle)
+        self._ctx_menu.add_command(label=t("dialog.ctx.copy"), command=self._ctx_copy)
 
         btn_frame = ttk.Frame(main)
         btn_frame.pack(fill=tk.X, pady=(8, 0))
-        ttk.Button(btn_frame, text="确定", command=self._on_confirm).pack(side=tk.RIGHT)
+        ttk.Button(btn_frame, text=t("confirm.button"), command=self._on_confirm).pack(side=tk.RIGHT)
 
     def _populate_tree(self, files: List[Dict[str, str]]) -> None:
         self._tree.delete(*self._tree.get_children())

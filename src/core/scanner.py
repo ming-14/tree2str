@@ -17,6 +17,9 @@ logger = logging.getLogger(__name__)
 ## 工作线程数 = CPU 核心数
 _WORKERS = os.cpu_count() or 4
 
+## 默认排除的目录名（不递归进入）
+EXCLUDE_DIRS_DEFAULT: Set[str] = {".git", "node_modules"}
+
 
 ## 已知的文本型 application MIME 子类型（mimetype 模块无法区分文本/二进制）
 _TEXT_APP_MIMES = frozenset({
@@ -258,9 +261,14 @@ def scan_directory(root_path: str, exclude_names: Set[str]) -> Tuple[List[str], 
             if subdirs:
                 ## 计算父目录 rel（同一批 subdirs 来自同一父目录）
                 parent_rel = os.path.dirname(subdirs[0][1]) or "."
-                dir_children.setdefault(parent_rel, []).extend(d[2] for d in subdirs)
-                ## 子目录入队，由后续线程继续扫描
-                queue.extend((d[0], d[1]) for d in subdirs)
+                kept = []
+                for d in subdirs:
+                    if d[2] in EXCLUDE_DIRS_DEFAULT:
+                        logger.debug("跳过排除目录: %s", d[0])
+                        continue
+                    kept.append(d)
+                    dir_children.setdefault(parent_rel, []).append(d[2])
+                queue.extend((d[0], d[1]) for d in kept)
 
     ## ── 阶段 2：多线程并行 stat ──
     stat_results = [None] * len(all_files)

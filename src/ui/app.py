@@ -20,6 +20,7 @@ from ui.config import (EXCLUDE_NAMES_DEFAULT,
                        load_config, save_config, apply_config)
 from ui.dialogs import NoExtFileDialog
 from ui.cursor import set_busy_cursor, restore_system_cursor
+from lib.i18n import t
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ class ConfigWindow:
 
         ## 立即创建窗口，避免大目录扫描导致窗口迟迟不出现
         self.root = tk.Tk()
-        self.root.title("文件树ToStr 配置")
+        self.root.title(t("app.title"))
         self.root.attributes('-topmost', True)
         self.root.after(100, lambda: self.root.attributes('-topmost', False))
         self.root.protocol('WM_DELETE_WINDOW', self._on_window_close)
@@ -78,7 +79,7 @@ class ConfigWindow:
         self._loading_frame.pack(fill=tk.BOTH, expand=True)
         ttk.Label(
             self._loading_frame,
-            text="正在扫描目录，请稍候...",
+            text=t("loading.text"),
             font=("", 11),
         ).pack(expand=True)
         self._loading_progress = ttk.Progressbar(
@@ -142,7 +143,7 @@ class ConfigWindow:
         logger.info("后台扫描完成，构建UI")
 
         if self._scan_error:
-            messagebox.showerror("扫描失败", f"目录扫描出错:\n{self._scan_error}")
+            messagebox.showerror(t("scan_failed.title"), t("scan_failed.msg", error=self._scan_error))
             self.root.destroy()
             return
 
@@ -196,7 +197,7 @@ class ConfigWindow:
         self._config_frame = ttk.Frame(self.root, padding=10)
         self._config_frame.pack(fill=tk.BOTH, expand=True)
 
-        ttk.Label(self._config_frame, text="选择要收集内容的文件扩展名:").pack(anchor=tk.W)
+        ttk.Label(self._config_frame, text=t("select_ext.label")).pack(anchor=tk.W)
         self._build_extension_list(self._config_frame)
 
         if self.no_ext_files:
@@ -209,15 +210,15 @@ class ConfigWindow:
         self._progress_frame = ttk.Frame(self.root, padding=10)
         self._progress_bar = ttk.Progressbar(self._progress_frame, mode='indeterminate')
         self._progress_bar.pack(fill=tk.X, pady=10)
-        ttk.Label(self._progress_frame, text="正在处理，请稍候...").pack()
+        ttk.Label(self._progress_frame, text=t("processing.text")).pack()
 
         self._result_frame = ttk.Frame(self.root, padding=10)
         self._result_label = ttk.Label(self._result_frame, text="", justify=tk.LEFT)
         self._result_label.pack(fill=tk.X, pady=10)
         btn_row = ttk.Frame(self._result_frame)
         btn_row.pack()
-        ttk.Button(btn_row, text="另存为...", command=self._on_save_as).pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_row, text="关闭", command=self._on_window_close).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_row, text=t("save_as.button"), command=self._on_save_as).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_row, text=t("close.button"), command=self._on_window_close).pack(side=tk.LEFT, padx=5)
 
         win_w, win_h = self._calc_window_size()
         self.root.geometry(f"{win_w}x{win_h}")
@@ -228,7 +229,7 @@ class ConfigWindow:
         list_frame.pack(fill=tk.X, pady=5)
 
         if not self.all_extensions:
-            ttk.Label(list_frame, text="（未发现任何扩展名）").grid(row=0, column=0, padx=5, pady=5)
+            ttk.Label(list_frame, text=t("no_ext_found")).grid(row=0, column=0, padx=5, pady=5)
             return
 
         num_cols = self._calc_columns()
@@ -247,7 +248,7 @@ class ConfigWindow:
 
         ttk.Button(
             no_ext_frame,
-            text=f"查看没有扩展名的文件（{len(self.no_ext_files)}个）",
+            text=t("no_ext.button", count=len(self.no_ext_files)),
             command=self._open_no_ext_dialog,
         ).pack(anchor=tk.W)
 
@@ -256,7 +257,7 @@ class ConfigWindow:
 
         if self._initial_no_ext:
             self._selected_no_ext = set(self._initial_no_ext)
-            self._no_ext_label.configure(text=f"已勾选 {len(self._selected_no_ext)} 个没有扩展名的文件")
+            self._no_ext_label.configure(text=t("no_ext_selected", count=len(self._selected_no_ext)))
 
     def _open_no_ext_dialog(self) -> None:
         dialog = NoExtFileDialog(
@@ -265,7 +266,7 @@ class ConfigWindow:
         self._selected_no_ext = dialog.selected_rel_paths
         count = len(self._selected_no_ext)
         if count > 0:
-            self._no_ext_label.configure(text=f"已勾选 {count} 个没有扩展名的文件")
+            self._no_ext_label.configure(text=t("no_ext_selected", count=count))
         else:
             self._no_ext_label.configure(text="")
         logger.info("无扩展名文件选择更新，已勾选: %d 个", count)
@@ -273,7 +274,7 @@ class ConfigWindow:
     def _build_trid_option(self, parent: ttk.Frame) -> None:
         self.trid_var = tk.BooleanVar(value=self._initial_trid)
         self._trid_checkbutton = ttk.Checkbutton(
-            parent, text="启用TrID文件类型检查", variable=self.trid_var
+            parent, text=t("trid.checkbox"), variable=self.trid_var
         )
         if not TRID_AVAILABLE:
             self._trid_checkbutton.configure(state=tk.DISABLED)
@@ -283,14 +284,14 @@ class ConfigWindow:
     def _build_buttons(self, parent: ttk.Frame) -> None:
         btn_frame = ttk.Frame(parent)
         btn_frame.pack(fill=tk.X, pady=(5, 0))
-        ttk.Button(btn_frame, text="确定", command=self._on_confirm).pack(side=tk.RIGHT)
+        ttk.Button(btn_frame, text=t("confirm.button"), command=self._on_confirm).pack(side=tk.RIGHT)
 
     def _on_confirm(self) -> None:
         selected: Set[str] = {
             ext for ext, var in self.ext_vars.items() if var.get()
         }
         if not selected and not self._selected_no_ext:
-            messagebox.showwarning("提示", "请至少选择一个扩展名或无扩展名文件")
+            messagebox.showwarning(t("warning.select_one.title"), t("warning.select_one.msg"))
             logger.warning("用户未选择任何扩展名或无扩展名文件")
             return
 
@@ -307,8 +308,8 @@ class ConfigWindow:
         self._output_path = os.path.join(self.root_path, "output.json")
         if os.path.exists(self._output_path):
             if not messagebox.askyesno(
-                "文件已存在",
-                f"目标文件已存在：\n{self._output_path}\n\n是否覆盖？"
+                t("file_exists.title"),
+                t("file_exists.msg", path=self._output_path)
             ):
                 logger.info("用户取消覆盖 output.json")
                 self._progress_bar.stop()
@@ -349,11 +350,11 @@ class ConfigWindow:
     def _show_result(self) -> None:
         if self._processing_error:
             self._result_label.config(
-                text=f"处理出错:\n{self._processing_error}",
+                text=t("process_error", error=self._processing_error),
             )
         else:
             self._result_label.config(
-                text=f"处理完成!\n文件已保存至:\n{self._output_path}",
+                text=t("process_done", path=self._output_path),
             )
         self._result_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -369,10 +370,10 @@ class ConfigWindow:
         try:
             import shutil
             shutil.copy(self._output_path, path)
-            messagebox.showinfo("另存为", f"文件已保存至:\n{path}")
+            messagebox.showinfo(t("save_as.title"), t("save_as.success", path=path))
             logger.info("文件另存为: %s", path)
         except Exception as e:
-            messagebox.showerror("另存为失败", str(e))
+            messagebox.showerror(t("save_as_failed.title"), str(e))
             logger.error("另存为失败: %s", e)
 
     def run(self) -> None:

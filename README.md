@@ -1,83 +1,85 @@
 # tree2str
 
-Windows 桌面工具：递归扫描目录构建文件树，按扩展名收集文本内容，可选 TrID 文件类型识别，输出 JSON。
+English | [中文](README.zh.md)
 
-## 功能特性
+A Windows desktop tool that recursively scans directories to build a file tree, collects text content by extension, optionally identifies file types via TrID, and outputs JSON.
 
-- **递归扫描目录** — BFS 多线程扫描，构建完整文件树（含文件大小、修改时间）
-- **按扩展名收集内容** — 勾选需要收集文本内容的扩展名，自动识别文本类型扩展名
-- **无扩展名文件支持** — 弹窗查看与选择无扩展名文件，支持 Everything 风格搜索语法
-- **TrID 文件类型识别** — 可选基于二进制特征的文件格式识别（内置 Python 移植版 TrID 引擎）
-- **配置持久化** — 扩展名选择、TrID 开关等配置自动保存，下次启动恢复
-- **JSON 输出** — 结果输出为结构化 JSON 文件
+## Features
 
-## 搜索语法
+- **Recursive Directory Scanning** — BFS multi-threaded scan, builds a complete file tree (with file size, modification time)
+- **Content Collection by Extension** — Select extensions to collect text content from; auto-detects text-type extensions
+- **Extensionless File Support** — Popup to view and select extensionless files, with Everything-style search syntax
+- **TrID File Type Identification** — Optional binary-signature-based file format recognition (built-in Python port of TrID engine)
+- **Config Persistence** — Extension selection, TrID toggle, and other settings are auto-saved and restored on next launch
+- **JSON Output** — Results are output as a structured JSON file
 
-无扩展名文件弹窗支持类 Everything 搜索语法：
+## Search Syntax
 
-| 语法 | 示例 | 说明 |
-|------|------|------|
-| 关键词 AND | `src core` | 路径同时包含 "src" 和 "core" |
-| OR | `readme \| dialogs` | 路径包含 "readme" 或 "dialogs" |
-| NOT | `!dll` | 排除路径含 "dll" 的文件 |
-| 精确短语 | `"My Guide"` | 精确匹配含空格的短语 |
-| 通配符 | `*.py`, `dialogs.p?` | `*` 任意字符，`?` 单字符 |
-| `name:` / `n:` | `name:scanner` | 仅搜索文件名 |
-| `path:` / `p:` | `path:src` | 搜索完整路径 |
-| `size:` / `s:` | `size:>1mb` | 按大小筛选，支持范围 `size:10kb..1mb` 和常量 `size:tiny` |
-| `dm:` | `dm:>2025-06-01` | 按修改时间筛选 |
-| `case:` | `case:README` | 大小写敏感匹配 |
-| `regex:` | `regex:.*\.py$` | 正则表达式匹配 |
+The extensionless file popup supports Everything-like search syntax:
 
-## 快速开始
+| Syntax | Example | Description |
+|--------|---------|-------------|
+| Keywords AND | `src core` | Path contains both "src" and "core" |
+| OR | `readme \| dialogs` | Path contains "readme" or "dialogs" |
+| NOT | `!dll` | Exclude files whose path contains "dll" |
+| Exact phrase | `"My Guide"` | Exact match for a phrase with spaces |
+| Wildcards | `*.py`, `dialogs.p?` | `*` any chars, `?` single char |
+| `name:` / `n:` | `name:scanner` | Search filename only |
+| `path:` / `p:` | `path:src` | Search full path |
+| `size:` / `s:` | `size:>1mb` | Filter by size; supports ranges `size:10kb..1mb` and constants `size:tiny` |
+| `dm:` | `dm:>2025-06-01` | Filter by modification time |
+| `case:` | `case:README` | Case-sensitive matching |
+| `regex:` | `regex:.*\.py$` | Regular expression matching |
 
-### 环境要求
+## Quick Start
+
+### Requirements
 
 - Python 3.8+
 - Windows
 
-### 运行
+### Run
 
 ```bash
 python run.py
 ```
 
-可选指定配置文件：
+Optionally specify a config file:
 
 ```bash
 python run.py path/to/config.json
 ```
 
-### 可选加速
+### Optional Speedup
 
 ```bash
 pip install stringzilla
 ```
 
-安装 [stringzilla](https://github.com/ashvardanian/stringzilla) 可大幅提升 TrID 字符串匹配性能。
+Installing [stringzilla](https://github.com/ashvardanian/stringzilla) significantly improves TrID string matching performance.
 
-## 项目结构
+## Project Structure
 
 ```
 tree2str/
-├── run.py                    # 入口：sys.path 配置 + 控制台最小化
+├── run.py                    # Entry: sys.path setup + console minimization
 ├── src/
-│   ├── main.py               # 日志配置 + 参数解析 + 启动窗口
-│   ├── core/                 # 核心逻辑层（无 UI 依赖）
-│   │   ├── scanner.py        #   BFS 多线程目录扫描
-│   │   ├── tree.py           #   多线程文件内容填充 + TrID 分析
-│   │   ├── trid.py           #   TrID 定义包查找/加载
-│   │   └── pipeline.py       #   处理流水线（填充 → JSON 输出）
-│   ├── ui/                   # 界面层
-│   │   ├── app.py            #   主窗口
-│   │   ├── config.py         #   配置管理
-│   │   ├── cursor.py         #   系统光标忙状态管理
-│   │   └── dialogs.py        #   搜索组件 + 无扩展名文件弹窗
+│   ├── main.py               # Logging config + arg parsing + launch window
+│   ├── core/                 # Core logic layer (no UI dependency)
+│   │   ├── scanner.py        #   BFS multi-threaded directory scanner
+│   │   ├── tree.py           #   Multi-threaded file content fill + TrID analysis
+│   │   ├── trid.py           #   TrID definition pack lookup/loading
+│   │   └── pipeline.py       #   Processing pipeline (fill → JSON output)
+│   ├── ui/                   # UI layer
+│   │   ├── app.py            #   Main window
+│   │   ├── config.py         #   Config management
+│   │   ├── cursor.py         #   System busy cursor management
+│   │   └── dialogs.py        #   Search component + extensionless file popup
 │   ├── lib/
-│   │   └── trid_lite.py      #   TrID Python 移植版
+│   │   └── trid_lite.py      #   TrID Python port
 │   └── data/
-│       └── triddefs.trd      #   TrID 定义包
-├── test/                     # 测试（pytest）
+│       └── triddefs.trd      #   TrID definition pack
+├── test/                     # Tests (pytest)
 │   ├── core/
 │   │   ├── test_scanner.py
 │   │   └── test_tree.py
@@ -89,33 +91,33 @@ tree2str/
     └── trid_lite_doc.md
 ```
 
-## 测试
+## Testing
 
 ```bash
-# 运行全部测试
+# Run all tests
 pytest test/
 
-# 搜索功能测试
+# Search feature tests
 pytest test/ui/test_dialogs.py -v
 
-# 扫描器测试
+# Scanner tests
 pytest test/core/test_scanner.py -v
 
-# 目录树填充测试
+# Tree fill tests
 pytest test/core/test_tree.py -v
 ```
 
-共计 97 个测试，覆盖搜索语法解析、目录扫描、文件树填充三大模块。
+97 tests in total, covering search syntax parsing, directory scanning, and file tree filling.
 
-## 输出格式
+## Output Format
 
-JSON 输出结构：
+JSON output structure:
 
 ```json
 {
   "files": {
     "main.py": {
-      "content": "文件文本内容",
+      "content": "file text content",
       "size": 1234,
       "mtime": "2025-06-01T12:00:00",
       "trid": ["Python Script (.py) - 95.2%"]
@@ -130,12 +132,12 @@ JSON 输出结构：
 }
 ```
 
-## 技术栈
+## Tech Stack
 
-| 层级 | 技术 |
-|------|------|
-| 语言 | Python 3.8 |
+| Layer | Technology |
+|-------|------------|
+| Language | Python 3.8 |
 | GUI | Tkinter (ttk) |
-| 文件类型识别 | TrID (trid_lite.py) |
-| 配置存储 | JSON |
-| 并发 | threading + ThreadPoolExecutor |
+| File Type ID | TrID (trid_lite.py) |
+| Config Storage | JSON |
+| Concurrency | threading + ThreadPoolExecutor |

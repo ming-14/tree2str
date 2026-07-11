@@ -8,6 +8,7 @@ import sys
 import logging
 from typing import Optional
 
+from lib.i18n import init as i18n_init
 from ui.app import ConfigWindow
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,8 @@ def main() -> None:
         format="[%(levelname)s] %(asctime)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+
+    i18n_init()
 
     root_dir = os.getcwd()
     config_path: Optional[str] = None

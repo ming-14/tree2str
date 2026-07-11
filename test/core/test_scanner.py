@@ -188,16 +188,14 @@ class TestScanEdgeCases:
             assert tree == {"files": {}, "dirs": {}}
 
     def test_only_excluded(self):
-        """仅含应排除文件的目录（scanner 按文件名排除，非目录树）"""
+        """仅含排除目录的目录（node_modules 整体跳过）"""
         with tempfile.TemporaryDirectory() as tmpdir:
             os.makedirs(os.path.join(tmpdir, "node_modules"))
             with open(os.path.join(tmpdir, "node_modules", "a.js"), "w") as f:
                 f.write("test")
-            ## exclude_names 按文件名过滤，不会排除整个目录树
-            ## 因此 node_modules/a.js 仍会被扫描到
-            exts, no_ext, tree = scan_directory(tmpdir, {"node_modules"})
-            ## .js 扩展名会被发现（因为 "a.js" 不在 exclude 集合中）
-            assert ".js" in exts
+            exts, no_ext, tree = scan_directory(tmpdir, set())
+            assert ".js" not in exts
+            assert "node_modules" not in tree["dirs"]
 
     def test_no_extension_file(self):
         """仅含无扩展名文件"""
