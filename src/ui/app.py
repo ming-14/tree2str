@@ -223,6 +223,7 @@ class ConfigWindow:
         win_w, win_h = self._calc_window_size()
         self.root.geometry(f"{win_w}x{win_h}")
         self.root.minsize(self._WINDOW_MIN_WIDTH, self._WINDOW_MIN_HEIGHT)
+        self._center_window()
 
     def _build_extension_list(self, parent: ttk.Frame) -> None:
         list_frame = ttk.Frame(parent)

@@ -30,5 +30,8 @@
   "dialog.col.size": "サイズ",
   "dialog.col.mtime": "更新日時",
   "dialog.ctx.toggle": "チェック/チェック解除",
-  "dialog.ctx.copy": "ファイル情報をコピー"
+  "dialog.ctx.copy": "ファイル情報をコピー",
+  "dialog.help.button": "?",
+  "dialog.help.title": "Search Syntax Help",
+  "dialog.help.text": "Search Syntax Help\n\n· Multiple keywords separated by spaces are combined with AND\n· | separates alternatives (OR)\n· ! prefix means NOT (exclude), e.g. !test\n\n\"...\"   exact phrase match, e.g. \"config file\"\n* and ?  wildcards, * matches any chars, ? matches one char\n\nname: / n:   search by file name only (excluding path)\npath: / p:   search within the full path\nsize: / s:   filter by size, supports = < > <= >= and range 10kb..1mb\ndm: / datemodified:   filter by modified time, e.g. dm:2024-01-01\ncase:   case-sensitive match\nregex:  use regular expression, e.g. regex:.*\\.log$\n\nExamples:\n  config         search files containing config\n  name:test      file name contains test\n  size:>1mb      size larger than 1MB\n  *.log | *.txt  extension is log or txt\n  !temp          exclude files containing temp"
 }

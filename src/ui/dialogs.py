@@ -3,6 +3,7 @@ from tkinter import ttk
 import re
 import os
 import logging
+import threading
 from typing import Set, List, Dict, Optional, Callable, Tuple
 
 from lib.i18n import t
@@ -350,6 +351,8 @@ class NoExtFileDialog:
         self._sort_column: Optional[str] = None
         self._sort_reverse: bool = False
         self._search_query: str = ""
+        self._search_timer: Optional[str] = None
+        self._search_gen: int = 0
 
         self.dialog = tk.Toplevel(parent)
         self.dialog.title(t("dialog.no_ext.title"))
@@ -357,11 +360,21 @@ class NoExtFileDialog:
         self.dialog.minsize(self._DIALOG_MIN_WIDTH, self._DIALOG_MIN_HEIGHT)
         self.dialog.transient(parent)
         self.dialog.grab_set()
+        self._center_dialog()
 
         self._build_ui()
         self._populate_tree(self._filtered_files)
 
         self.dialog.wait_window()
+
+    def _center_dialog(self) -> None:
+        """将弹窗居中显示在父窗口之上"""
+        self.dialog.update_idletasks()
+        w = self.dialog.winfo_width()
+        h = self.dialog.winfo_height()
+        x = (self.dialog.winfo_screenwidth() - w) // 2
+        y = (self.dialog.winfo_screenheight() - h) // 2
+        self.dialog.geometry(f"{w}x{h}+{x}+{y}")
 
     @property
     def selected_rel_paths(self) -> Set[str]:
@@ -378,7 +391,10 @@ class NoExtFileDialog:
         self._search_var = tk.StringVar()
         self._search_entry = ttk.Entry(search_frame, textvariable=self._search_var)
         self._search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        self._search_var.trace_add("write", lambda *a: self._schedule_search())
         self._search_entry.bind("<Return>", lambda e: self._on_search())
+        ttk.Button(search_frame, text=t("dialog.help.button"), width=3,
+                   command=self._show_help).pack(side=tk.RIGHT, padx=(2, 0))
         ttk.Button(search_frame, text=t("dialog.search.button"), command=self._on_search).pack(side=tk.RIGHT)
         ttk.Button(search_frame, text=t("dialog.clear.button"), command=self._on_clear_search).pack(side=tk.RIGHT, padx=2)
 
@@ -424,6 +440,32 @@ class NoExtFileDialog:
         btn_frame = ttk.Frame(main)
         btn_frame.pack(fill=tk.X, pady=(8, 0))
         ttk.Button(btn_frame, text=t("confirm.button"), command=self._on_confirm).pack(side=tk.RIGHT)
+
+    def _show_help(self) -> None:
+        """显示搜索语法帮助窗口"""
+        help_win = tk.Toplevel(self.dialog)
+        help_win.title(t("dialog.help.title"))
+        help_win.transient(self.dialog)
+        help_win.grab_set()
+        help_win.geometry("480x440")
+        help_win.minsize(360, 300)
+
+        text = tk.Text(help_win, wrap=tk.WORD, padx=12, pady=12)
+        text.insert(tk.END, t("dialog.help.text"))
+        text.configure(state=tk.DISABLED)
+        text.pack(fill=tk.BOTH, expand=True)
+
+        btn_frame = ttk.Frame(help_win)
+        btn_frame.pack(fill=tk.X, pady=(0, 10))
+        ttk.Button(btn_frame, text=t("close.button"),
+                   command=help_win.destroy).pack(side=tk.RIGHT, padx=12)
+
+        help_win.update_idletasks()
+        w = help_win.winfo_width()
+        h = help_win.winfo_height()
+        x = (help_win.winfo_screenwidth() - w) // 2
+        y = (help_win.winfo_screenheight() - h) // 2
+        help_win.geometry(f"{w}x{h}+{x}+{y}")
 
     def _populate_tree(self, files: List[Dict[str, str]]) -> None:
         self._tree.delete(*self._tree.get_children())
@@ -510,22 +552,44 @@ class NoExtFileDialog:
         self.dialog.clipboard_append(info)
         logger.info("已复制文件信息: %s", info)
 
-    def _on_search(self) -> None:
-        """执行搜索，按 Everything-like 语法过滤 _all_files。"""
+    def _schedule_search(self) -> None:
+        """输入变更后的防抖调度：取消上一未触发的定时器，250ms 后再启动搜索。"""
+        if self._search_timer is not None:
+            self.dialog.after_cancel(self._search_timer)
+        self._search_timer = self.dialog.after(250, self._launch_search)
+
+    def _launch_search(self) -> None:
+        """主线程：读取查询、递增代际计数、启动后台守护线程执行搜索。"""
+        self._search_timer = None
         query = self._search_var.get().strip()
         self._search_query = query
-        if not query:
-            self._filtered_files = list(self._all_files)
-            self._populate_tree(self._filtered_files)
-            self._update_result_label()
-            return
+        self._search_gen += 1
+        gen = self._search_gen
+        threading.Thread(target=self._run_search, args=(query, gen),
+                         daemon=True).start()
 
-        logger.info("搜索查询: %s", query)
-        search = FileSearch(query)
-        self._filtered_files = [f for f in self._all_files if search.match(f)]
+    def _run_search(self, query: str, gen: int) -> None:
+        """后台线程：纯数据过滤（FileSearch），完成后 after(0) 回主线程刷新。"""
+        if not query:
+            filtered = list(self._all_files)
+        else:
+            logger.info("后台搜索查询: %s", query)
+            search = FileSearch(query)
+            filtered = [f for f in self._all_files if search.match(f)]
+        self.dialog.after(0, lambda: self._apply_search_result(filtered, gen))
+
+    def _apply_search_result(self, filtered: List[Dict[str, str]], gen: int) -> None:
+        """主线程：代际校验后刷新 _filtered_files、树与计数标签。"""
+        if gen != self._search_gen:
+            return  ## 过期结果，丢弃
+        self._filtered_files = filtered
         self._populate_tree(self._filtered_files)
         self._update_result_label()
         logger.info("搜索完成: %d / %d 个文件", len(self._filtered_files), len(self._all_files))
+
+    def _on_search(self) -> None:
+        """执行搜索（回车/搜索按钮的即时入口），复用后台线程逻辑、无防抖延迟。"""
+        self._launch_search()
 
     def _on_clear_search(self) -> None:
         """清除搜索条件，恢复全部文件。"""

@@ -2,3 +2,11 @@ __pycache__/
 *.pyc
 .pytest_cache/
 *.trd.cache
+tree_to_str-config.json
+output.json
+
+# PyInstaller 打包产物
+build/
+dist/
+*.spec
+.pyinstaller/
